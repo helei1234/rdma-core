@@ -9,6 +9,7 @@ lib*.a
 /include/**
 /.ninja*
 *.ninja
+.vscode
 Makefile
 
 # Tags

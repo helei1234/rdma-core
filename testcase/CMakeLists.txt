@@ -1,0 +1,36 @@
+# Shared example files
+add_library(base STATIC
+  pingpong.c
+  )
+
+add_executable(test_ibv_device_list test_ibv_device_list.c)
+target_link_libraries(test_ibv_device_list LINK_PRIVATE ibverbs)
+add_test(NAME test_ibv_device_list COMMAND test_ibv_device_list)
+
+add_executable(test_ibv_device_open test_ibv_device_open.c)
+target_link_libraries(test_ibv_device_open LINK_PRIVATE ibverbs)
+add_test(NAME test_ibv_device_open COMMAND test_ibv_device_open)
+
+add_executable(test_ibv_node_type_port_state test_ibv_node_type_port_state.c)
+target_link_libraries(test_ibv_node_type_port_state LINK_PRIVATE ibverbs)
+add_test(NAME test_ibv_node_type_port_state COMMAND test_ibv_node_type_port_state)
+
+add_executable(test_ibv_device_query test_ibv_device_query.c)
+target_link_libraries(test_ibv_device_query LINK_PRIVATE ibverbs)
+add_test(NAME test_ibv_device_query COMMAND test_ibv_device_query)
+
+add_executable(test_ibv_rc_send test_ibv_rc_send.c)
+target_link_libraries(test_ibv_rc_send LINK_PRIVATE ibverbs base)
+add_test(NAME test_ibv_rc_send COMMAND test_ibv_rc_send)
+
+add_executable(test_ibv_rc_recv test_ibv_rc_recv.c)
+target_link_libraries(test_ibv_rc_recv LINK_PRIVATE ibverbs base)
+add_test(NAME test_ibv_rc_recv COMMAND test_ibv_rc_recv)
+
+add_executable(test_ibv_addr_create_ah test_ibv_addr_create_ah.c)
+target_link_libraries(test_ibv_addr_create_ah LINK_PRIVATE ibverbs base)
+add_test(NAME test_ibv_addr_create_ah COMMAND test_ibv_addr_create_ah)
+
+add_executable(test_ibv_addr_create_ah_roce test_ibv_addr_create_ah_roce.c)
+target_link_libraries(test_ibv_addr_create_ah_roce LINK_PRIVATE ibverbs base)
+add_test(NAME test_ibv_addr_create_ah_roce COMMAND test_ibv_addr_create_ah_roce)

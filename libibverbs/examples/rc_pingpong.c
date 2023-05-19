@@ -87,6 +87,13 @@ struct pingpong_context {
 
 static struct ibv_cq *pp_cq(struct pingpong_context *ctx)
 {
+	// if(use_ts){
+	// 	printf("use ctx->cq_s.cq_ex\n");
+	// 	return ibv_cq_ex_to_cq(ctx->cq_s.cq_ex);
+	// }else {
+	// 	printf("use ctx->cq_s.cq\n");
+	// 	return ctx->cq_s.cq;
+	// }
 	return use_ts ? ibv_cq_ex_to_cq(ctx->cq_s.cq_ex) :
 		ctx->cq_s.cq;
 }
@@ -98,6 +105,7 @@ struct pingpong_dest {
 	union ibv_gid gid;
 };
 
+//整个函数就是给ibv_qp_attr附上各种属性
 static int pp_connect_ctx(struct pingpong_context *ctx, int port, int my_psn,
 			  enum ibv_mtu mtu, int sl,
 			  struct pingpong_dest *dest, int sgid_idx)
@@ -156,6 +164,7 @@ static int pp_connect_ctx(struct pingpong_context *ctx, int port, int my_psn,
 	return 0;
 }
 
+//设置client
 static struct pingpong_dest *pp_client_exch_dest(const char *servername, int port,
 						 const struct pingpong_dest *my_dest)
 {
@@ -175,7 +184,6 @@ static struct pingpong_dest *pp_client_exch_dest(const char *servername, int por
 		return NULL;
 
 	n = getaddrinfo(servername, service, &hints, &res);
-
 	if (n < 0) {
 		fprintf(stderr, "%s for %s:%d\n", gai_strerror(n), servername, port);
 		free(service);
@@ -524,6 +532,7 @@ static struct pingpong_context *pp_init_ctx(struct ibv_device *ib_dev, int size,
 			ctx->qpx = ibv_qp_to_qp_ex(ctx->qp);
 
 		ibv_query_qp(ctx->qp, &attr, IBV_QP_CAP, &init_attr);
+		
 		if (init_attr.cap.max_inline_data >= size && !use_dm)
 			ctx->send_flags |= IBV_SEND_INLINE;
 	}
@@ -663,6 +672,7 @@ static int pp_post_send(struct pingpong_context *ctx)
 		.opcode     = IBV_WR_SEND,
 		.send_flags = ctx->send_flags,
 	};
+
 	struct ibv_send_wr *bad_wr;
 
 	if (use_new_send) {
@@ -695,6 +705,7 @@ static inline int parse_single_wc(struct pingpong_context *ctx, int *scnt,
 				  uint64_t completion_timestamp,
 				  struct ts_params *ts)
 {
+
 	if (status != IBV_WC_SUCCESS) {
 		fprintf(stderr, "Failed status %s (%d) for wr_id %d\n",
 			ibv_wc_status_str(status),
@@ -704,10 +715,12 @@ static inline int parse_single_wc(struct pingpong_context *ctx, int *scnt,
 
 	switch ((int)wr_id) {
 	case PINGPONG_SEND_WRID:
+		printf("PINGPONG_SEND_WRID\n");
 		++(*scnt);
 		break;
 
 	case PINGPONG_RECV_WRID:
+		printf("PINGPONG_RECV_WRID\n");
 		if (--(*routs) <= 1) {
 			*routs += pp_post_recv(ctx, ctx->rx_depth - *routs);
 			if (*routs < ctx->rx_depth) {
@@ -1135,6 +1148,7 @@ int main(int argc, char *argv[])
 
 			do {
 				ne = ibv_poll_cq(pp_cq(ctx), 2, wc);
+				// printf("%d", ne);
 				if (ne < 0) {
 					fprintf(stderr, "poll CQ failed %d\n", ne);
 					return 1;
@@ -1142,6 +1156,7 @@ int main(int argc, char *argv[])
 			} while (!use_event && ne < 1);
 
 			for (i = 0; i < ne; ++i) {
+				printf("%d", ne);
 				ret = parse_single_wc(ctx, &scnt, &rcnt, &routs,
 						      iters,
 						      wc[i].wr_id,
@@ -1159,7 +1174,7 @@ int main(int argc, char *argv[])
 		perror("gettimeofday");
 		return 1;
 	}
-
+	printf("\n");
 	{
 		float usec = (end.tv_sec - start.tv_sec) * 1000000 +
 			(end.tv_usec - start.tv_usec);
